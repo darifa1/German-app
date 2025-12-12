@@ -395,50 +395,194 @@ function clearVocab() {
 }
 
 // Audio Functions
-function speakWord() {
-    if (!currentWord) return;
+let germanVoices = [];
+
+function loadVoices() {
+    return new Promise((resolve) => {
+        let voices = window.speechSynthesis.getVoices();
+        
+        if (voices.length > 0) {
+            germanVoices = voices.filter(voice => 
+                voice.lang.includes('de') || 
+                voice.lang.includes('DE')
+            );
+            resolve(germanVoices);
+        } else {
+            window.speechSynthesis.onvoiceschanged = () => {
+                voices = window.speechSynthesis.getVoices();
+                germanVoices = voices.filter(voice => 
+                    voice.lang.includes('de') || 
+                    voice.lang.includes('DE')
+                );
+                resolve(germanVoices);
+            };
+        }
+    });
+}
+
+function showVoiceSelector() {
+    loadVoices().then(() => {
+        if (germanVoices.length === 0) {
+            alert('No German voices found on this device.\n\nTry:\n- Chrome browser (best support)\n- Safari on iPhone\n- Install language pack in device settings');
+            closeUserMenu();
+            return;
+        }
+        
+        const voiceNames = germanVoices.map((v, i) => `${i + 1}. ${v.name}`).join('\n');
+        const selection = prompt(`Available German Voices:\n\n${voiceNames}\n\nEnter number (1-${germanVoices.length}) or press Cancel:`);
+        
+        if (selection) {
+            const index = parseInt(selection) - 1;
+            if (index >= 0 && index < germanVoices.length) {
+                localStorage.setItem('preferredVoiceIndex', index);
+                alert(`Voice changed to: ${germanVoices[index].name}`);
+            } else {
+                alert('Invalid selection');
+            }
+        }
+        closeUserMenu();
+    });
+}
+
+function getBestGermanVoice() {
+    if (germanVoices.length === 0) {
+        const allVoices = window.speechSynthesis.getVoices();
+        germanVoices = allVoices.filter(voice => 
+            voice.lang.includes('de') || 
+            voice.lang.includes('DE')
+        );
+    }
     
-    if (!('speechSynthesis' in window)) {
-        alert('Speech synthesis not supported');
+    // Check for user's preferred voice
+    const preferredIndex = localStorage.getItem('preferredVoiceIndex');
+    if (preferredIndex !== null) {
+        const index = parseInt(preferredIndex);
+        if (germanVoices[index]) {
+            return germanVoices[index];
+        }
+    }
+    
+    // Priority order for best German voices
+    const priorities = [
+        'Google Deutsch',
+        'Microsoft Stefan',
+        'Microsoft Hedda',
+        'Anna',
+        'de-DE',
+        'de_DE',
+        'German'
+    ];
+    
+    for (let priority of priorities) {
+        const voice = germanVoices.find(v => 
+            v.name.includes(priority) || v.lang.includes(priority)
+        );
+        if (voice) return voice;
+    }
+    
+    // Return first German voice if available
+    return germanVoices[0] || null;
+}
+
+function speakWord() {
+    if (!currentWord) {
+        alert('No word selected');
         return;
     }
     
+    if (!('speechSynthesis' in window)) {
+        alert('Speech not supported on this device. Try Chrome or Safari.');
+        return;
+    }
+    
+    // Stop any ongoing speech
     window.speechSynthesis.cancel();
     
     setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(currentWord);
         utterance.lang = 'de-DE';
-        utterance.rate = 0.7;
+        utterance.rate = 0.75;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
         
-        let voices = window.speechSynthesis.getVoices();
-        const germanVoice = voices.find(v => v.lang.includes('de'));
-        if (germanVoice) utterance.voice = germanVoice;
+        const voice = getBestGermanVoice();
+        if (voice) {
+            utterance.voice = voice;
+            console.log('Using voice:', voice.name);
+        }
+        
+        utterance.onerror = (e) => {
+            console.error('Speech error:', e);
+            // Try again without voice selection
+            const retryUtterance = new SpeechSynthesisUtterance(currentWord);
+            retryUtterance.lang = 'de-DE';
+            retryUtterance.rate = 0.75;
+            window.speechSynthesis.speak(retryUtterance);
+        };
+        
+        utterance.onstart = () => {
+            console.log('Speech started');
+        };
+        
+        utterance.onend = () => {
+            console.log('Speech ended');
+        };
         
         window.speechSynthesis.speak(utterance);
-    }, 100);
+    }, 150);
 }
 
 function playFullStory() {
-    if (!currentStory) return;
+    if (!currentStory) {
+        alert('No story selected');
+        return;
+    }
     
+    if (!('speechSynthesis' in window)) {
+        alert('Speech not supported on this device. Try Chrome or Safari.');
+        return;
+    }
+    
+    // Stop any ongoing speech
     window.speechSynthesis.cancel();
     
     setTimeout(() => {
+        // Split into smaller chunks for better mobile performance
         const sentences = currentStory.text.match(/[^.!?]+[.!?]+/g) || [currentStory.text];
         let currentIndex = 0;
         
         function speakNextSentence() {
-            if (currentIndex >= sentences.length) return;
+            if (currentIndex >= sentences.length) {
+                console.log('Story playback complete');
+                return;
+            }
             
-            const utterance = new SpeechSynthesisUtterance(sentences[currentIndex].trim());
+            const sentence = sentences[currentIndex].trim();
+            if (!sentence) {
+                currentIndex++;
+                speakNextSentence();
+                return;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(sentence);
             utterance.lang = 'de-DE';
             utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
             
-            let voices = window.speechSynthesis.getVoices();
-            const germanVoice = voices.find(v => v.lang.includes('de'));
-            if (germanVoice) utterance.voice = germanVoice;
+            const voice = getBestGermanVoice();
+            if (voice) {
+                utterance.voice = voice;
+            }
             
             utterance.onend = () => {
+                currentIndex++;
+                // Small delay between sentences
+                setTimeout(speakNextSentence, 300);
+            };
+            
+            utterance.onerror = (e) => {
+                console.error('Speech error:', e);
                 currentIndex++;
                 speakNextSentence();
             };
@@ -447,12 +591,13 @@ function playFullStory() {
         }
         
         speakNextSentence();
-    }, 100);
+    }, 150);
 }
 
 function stopAudio() {
-    if (window.speechSynthesis.speaking) {
+    if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
+        console.log('Audio stopped');
     }
 }
 
@@ -568,6 +713,15 @@ if (savedLangMode) {
     langMode = savedLangMode;
 }
 
+// Load voices on page load
+loadVoices().then(() => {
+    console.log('German voices loaded:', germanVoices.length);
+    if (germanVoices.length > 0) {
+        console.log('Available German voices:', germanVoices.map(v => v.name));
+    }
+});
+
+// Check for saved user
 const savedUser = localStorage.getItem('currentUser');
 if (savedUser) {
     currentUser = JSON.parse(savedUser);
