@@ -196,10 +196,10 @@
 
         <div class="vocab-list" id="vocabList">
             <div class="vocab-header">
-                <h3>My Vocabulary</h3>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn" onclick="clearVocab()">Clear</button>
-                    <button class="btn" onclick="closeVocab(); document.getElementById('overlay').classList.remove('show')">✕ Close</button>
+                <h3>📚 My Vocabulary</h3>
+                <div class="vocab-header-buttons">
+                    <button class="vocab-close-btn" onclick="closeVocab(); document.getElementById('overlay').classList.remove('show')">← Back</button>
+                    <button class="btn" onclick="clearVocab()">Clear All</button>
                 </div>
             </div>
             <div id="vocabItems"></div>
