@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>German Learning App</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <!-- Login/Signup Page -->
     <div id="authPage" class="auth-page">
@@ -162,8 +160,7 @@
                     <h2 id="storyTitle"></h2>
                     <div class="reading-controls">
                         <button class="btn btn-primary" onclick="playFullStory()">▶ Play Story</button>
-                        <button class="btn" onclick="stopAudio()" style="background-color: #f44336;">⏹ Stop
-                            Audio</button>
+                        <button class="btn" onclick="stopAudio()" style="background-color: #f44336;">⏹ Stop Audio</button>
                         <div class="font-control">
                             <button class="btn" onclick="changeFontSize(-2)">A-</button>
                             <span class="font-size-display" id="fontSizeDisplay">18px</span>
@@ -192,8 +189,7 @@
             </div>
             <div class="popup-controls">
                 <button class="btn btn-primary" type="button" onclick="speakWord()">🔊 Pronounce</button>
-                <button class="btn" type="button" onclick="stopAudio()"
-                    style="background-color: #f44336; color: white;">⏹ Stop</button>
+                <button class="btn" type="button" onclick="stopAudio()" style="background-color: #f44336; color: white;">⏹ Stop</button>
                 <button class="btn" type="button" onclick="closePopup()">Close</button>
             </div>
         </div>
@@ -201,7 +197,10 @@
         <div class="vocab-list" id="vocabList">
             <div class="vocab-header">
                 <h3>My Vocabulary</h3>
-                <button class="btn" onclick="clearVocab()">Clear</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" onclick="clearVocab()">Clear</button>
+                    <button class="btn" onclick="closeVocab(); document.getElementById('overlay').classList.remove('show')">✕ Close</button>
+                </div>
             </div>
             <div id="vocabItems"></div>
         </div>
@@ -211,5 +210,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
