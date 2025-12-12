@@ -63,7 +63,6 @@ body {
         opacity: 0;
         transform: translateY(30px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -616,6 +615,31 @@ body {
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: -1.5rem;
+    background-color: var(--card-bg);
+    padding-top: 1rem;
+    z-index: 10;
+}
+
+.vocab-header-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.vocab-close-btn {
+    background-color: var(--accent);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.vocab-close-btn:hover {
+    background-color: var(--accent-hover);
 }
 
 .vocab-item {
@@ -624,6 +648,18 @@ body {
     border-radius: 5px;
     margin-bottom: 0.8rem;
     border-left: 3px solid var(--accent);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .vocab-word {
@@ -729,6 +765,31 @@ body {
         width: 100%;
         right: -100%;
     }
+    
+    .vocab-list.show {
+        right: 0;
+    }
+    
+    .vocab-header {
+        flex-wrap: wrap;
+    }
+    
+    .vocab-header h3 {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        font-size: 1.3rem;
+    }
+    
+    .vocab-header-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .vocab-close-btn {
+        flex: 1;
+        font-size: 1.1rem;
+        padding: 0.7rem;
+    }
 
     .translation-popup {
         left: 50% !important;
@@ -745,5 +806,13 @@ body {
     .user-menu.show {
         right: 10px;
         width: calc(100% - 20px);
+    }
+    
+    .user-profile span {
+        display: none;
+    }
+    
+    .level-badge-small {
+        display: none;
     }
 }
